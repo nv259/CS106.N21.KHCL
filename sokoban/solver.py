@@ -143,6 +143,8 @@ def isFailed(posBox):
 
 """Implement all approcahes"""
 
+global exploredSet
+
 def depthFirstSearch(gameState):
     """Implement depthFirstSearch approach"""
     beginBox = PosOfBoxes(gameState)
@@ -150,8 +152,8 @@ def depthFirstSearch(gameState):
 
     startState = (beginPlayer, beginBox)
     frontier = collections.deque([[startState]])
-    exploredSet = set()
-    actions = [[0]] 
+    global exploredSet
+    actions = [[0]]
     temp = []
 
     while frontier:
@@ -170,10 +172,11 @@ def depthFirstSearch(gameState):
                 if isFailed(newPosBox):
                     continue
 
-                frontier.append([(newPosPlayer, newPosBox)])
+                frontier.append(node + [(newPosPlayer, newPosBox)])
                 actions.append(node_action + [action[-1]])
 
     return temp
+
 
 def breadthFirstSearch(gameState):
     """Implement breadthFirstSearch approach"""
@@ -186,22 +189,39 @@ def breadthFirstSearch(gameState):
     exploredSet = set()
     temp = []
 
+    # Choose a node in frontier to expand until the frontier is empty
     while frontier:
+        """Choose the left most node in frontier
+        -> The left most node is the first node pushed in queue
+        => So that we will expand the shallowest node in the frontier"""
         node = frontier.popleft()
         node_action = actions.popleft()
 
+        """Check whether the chosen node is the goal state
+        - If YES then return node_action (path from start state to goal state)
+        - If NO then go to next step. """
         if isEndState(node[-1][-1]):
             temp += node_action[1:]
             break
 
+        """Check whether the chosen node is already in Closed set (exploredSet)
+        - If YES then we do not do anything with this node and pick next node,
+        - If NO then expand it. """
         if node[-1] not in exploredSet:
+            # Add the chosen node to Closed set
             exploredSet.add(node[-1])
+
+            # Expand the chosen node with
+            # actions: Up, Down, Left, Right (can't go out the boundary)
+            # successor: update location of Player and boxes
             for action in legalActions(node[-1][0], node[-1][1]):
                 newPosPlayer, newPosBox = updateState(node[-1][0], node[-1][1], action)
 
+                # Check if new state is potentially failed (e.g: box pushed to the corner, etc...)
                 if isFailed(newPosBox):
                     continue
 
+                # If the new state is not potentially failed, push it in the frontier
                 frontier.append([(newPosPlayer, newPosBox)])
                 actions.append(node_action + [action[-1]])
 
@@ -213,7 +233,6 @@ def cost(actions):
 
 def uniformCostSearch(gameState):
     """Implement uniformCostSearch approach"""
-    #TODO: Decrease size of variables
     beginBox = PosOfBoxes(gameState)
     beginPlayer = PosOfPlayer(gameState)
 
@@ -224,7 +243,40 @@ def uniformCostSearch(gameState):
     actions = PriorityQueue()
     actions.push([0], 0)
     temp = []
+
     ### Implement uniform cost search here
+    while frontier:
+        """Choose the lowest cost from the frontier
+        - frontier is PriorityQueue(), therefore, we can get it through pop() function
+        - With cost() function, the lowest cost means the maximum number of pushing boxes."""
+        node = frontier.pop()
+        node_action = actions.pop()
+
+        # Check whether the chosen node is the goal state
+        if isEndState(node[-1][-1]):
+            # Return path from start state to the goal state
+            temp += node_action[1:]
+            break
+
+        # Check if the chosen node is already in Closed set (exploredSet)
+        if node[-1] not in exploredSet:
+            # Add the chosen node to Closed set
+            exploredSet.add(node[-1])
+
+            # Expand the chosen node
+            for action in legalActions(node[-1][0], node[-1][1]):
+                # successor:
+                newPosPlayer, newPosBox = updateState(node[-1][0], node[-1][1], action)
+
+                # Skip new state if it is potentially failed
+                if isFailed(newPosBox):
+                    continue
+
+                # Add new state and its cost to the frontier
+                # Then the frontier will automatically sort it for us
+                action_cost = cost(node_action[1:] + [action[-1]])
+                frontier.push([(newPosPlayer, newPosBox)], action_cost)
+                actions.push(node_action + [action[-1]], action_cost)
     
     return temp
 
@@ -250,7 +302,7 @@ def get_move(layout, player_pos, method):
     global posWalls, posGoals
     # layout, method = readCommand(sys.argv[1:]).values()
     gameState = transferToGameState2(layout, player_pos)
-    print(gameState.__sizeof__())
+    print(len(gameState))
     posWalls = PosOfWalls(gameState)
     posGoals = PosOfGoals(gameState)
     if method == 'dfs':

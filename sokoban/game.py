@@ -27,7 +27,7 @@ class Game:
         self.window = window
         self.load_textures()
         self.player = None
-        self.index_level = 2
+        self.index_level = 1
         self.load_level()
         self.play = True
         self.scores = Scores(self)
@@ -64,12 +64,12 @@ class Game:
             if event.key == K_ESCAPE:
                 # Quit game
                 self.play = False
-            if event.key in [K_UP, K_DOWN, K_LEFT, K_RIGHT, K_z, K_s, K_q, K_d]:
+            if event.key in [K_UP, K_DOWN, K_LEFT, K_RIGHT, K_z, K_s, K_q, K_d, K_p]:
                 # Move players
                 self.player.move(event.key, self.level, self.player_interface)
-                if self.has_win():
+                if self.has_win() or event.key == K_p:
                     self.index_level += 1
-                    if (self.index_level == 17):
+                    if (self.index_level == 19):
                         self.index_level = 1
                     self.scores.save()
                     self.load_level()
@@ -109,17 +109,17 @@ class Game:
         return nb_missing_target == 0
 
     def auto_move(self):
-        strategy = get_move(self.level.structure[:-1], self.level.position_player, 'dfs')
-        # strategy = get_move(self.level.structure[:-1], self.level.position_player, 'bfs')
-        #strategy = get_move(self.level.structure[:-1], self.level.position_player, 'ucs')
+        # strategy = get_move(self.level.structure[:-1], self.level.position_player, 'dfs')
+        strategy = get_move(self.level.structure[:-1], self.level.position_player, 'bfs')
+        strategy = get_move(self.level.structure[:-1], self.level.position_player, 'ucs')
         # with open("assets/sokobanSolver/Solverlevel_" + str(self.index_level) + ".txt", 'w+') as solver_file:
         #     for listitem in strategy:
         #         solver_file.write('%s, ' % listitem)
-        if strategy is not None:
+        """if strategy is not None:
             try:
                 _thread.start_new_thread( move, ("Thread-1", 2, strategy) )
             except:
-                print ("Error: unable to start thread")
+                print ("Error: unable to start thread")"""
 
 
 # Define a function for the thread

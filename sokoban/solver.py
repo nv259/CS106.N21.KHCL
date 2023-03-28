@@ -141,9 +141,9 @@ def isFailed(posBox):
                 elif newBoard[1] in posBox and newBoard[6] in posBox and newBoard[2] in posWalls and newBoard[3] in posWalls and newBoard[8] in posWalls: return True
     return False
 
-"""Implement all approcahes"""
 
-global exploredSet
+"""Implement all approaches"""
+
 
 def depthFirstSearch(gameState):
     """Implement depthFirstSearch approach"""
@@ -152,7 +152,7 @@ def depthFirstSearch(gameState):
 
     startState = (beginPlayer, beginBox)
     frontier = collections.deque([[startState]])
-    global exploredSet
+    exploredSet = set()
     actions = [[0]]
     temp = []
 
@@ -166,6 +166,7 @@ def depthFirstSearch(gameState):
 
         if node[-1] not in exploredSet:
             exploredSet.add(node[-1])
+
             for action in legalActions(node[-1][0], node[-1][1]):
                 newPosPlayer, newPosBox = updateState(node[-1][0], node[-1][1], action)
 
@@ -175,6 +176,7 @@ def depthFirstSearch(gameState):
                 frontier.append(node + [(newPosPlayer, newPosBox)])
                 actions.append(node_action + [action[-1]])
 
+    print(len(temp))
     return temp
 
 
@@ -225,6 +227,7 @@ def breadthFirstSearch(gameState):
                 frontier.append([(newPosPlayer, newPosBox)])
                 actions.append(node_action + [action[-1]])
 
+    print(len(temp))
     return temp
     
 def cost(actions):
@@ -277,7 +280,8 @@ def uniformCostSearch(gameState):
                 action_cost = cost(node_action[1:] + [action[-1]])
                 frontier.push([(newPosPlayer, newPosBox)], action_cost)
                 actions.push(node_action + [action[-1]], action_cost)
-    
+
+    print(len(temp))
     return temp
 
 """Read command"""
@@ -315,5 +319,5 @@ def get_move(layout, player_pos, method):
         raise ValueError('Invalid method.')
     time_end=time.time()
     print('Runtime of %s: %.2f second.' %(method, time_end-time_start))
-    print(result)
+    # print(result)
     return result

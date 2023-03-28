@@ -248,7 +248,7 @@ def uniformCostSearch(gameState):
     temp = []
 
     ### Implement uniform cost search here
-    while frontier:
+    while not frontier.isEmpty():
         """Choose the lowest cost from the frontier
         - frontier is PriorityQueue(), therefore, we can get it through pop() function
         - With cost() function, the lowest cost means the maximum number of pushing boxes."""

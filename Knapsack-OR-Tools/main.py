@@ -22,7 +22,7 @@ def ReadData(path_to_file):
             values.append(value)
             weights.append(weight)
 
-        return values, [weights], [capacities]
+    return values, [weights], [capacities]
 
 
 def main():

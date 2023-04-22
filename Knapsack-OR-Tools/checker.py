@@ -40,7 +40,7 @@ def dp(values, weights, capacities):
 
 
 def main():
-    path_to_file = "./kplib/00Uncorrelated/n00050"
+    path_to_file = "./kplib/11ProfitCeiling/n00200"
     values, weights, capacities = ReadData(path_to_file + '/R01000/s000.kp')
     dp(values, weights, capacities)
 

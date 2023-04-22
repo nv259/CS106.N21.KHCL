@@ -23,20 +23,21 @@ def ReadData(path_to_file):
 
     return values, weights, capacities
 
+
 def dp(values, weights, capacities):
     # Init
-    f = np.zeros(capacities + 1)
-    for i, weight in enumerate(weights):
-        f[weight] = values[i]
+    f = np.zeros([len(weights) + 1, capacities + 1])
 
     # Dynamic programming
-    for i in range(capacities):
-        for index, weight in enumerate(weights):
-            if weight > i:
-                continue
-            f[i] = max(f[i], f[i - weight] + values[index])
+    for i in range(1, len(weights) + 1):
+        for j in range(capacities + 1):
+            if weights[i - 1] > j:
+                f[i][j] = f[i - 1][j]
+            else:
+                f[i][j] = max(f[i - 1][j], f[i - 1][j - weights[i - 1]] + values[i - 1])
 
     print(f.max())
+
 
 def main():
     path_to_file = "./kplib/00Uncorrelated/n00050"

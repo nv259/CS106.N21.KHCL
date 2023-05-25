@@ -270,7 +270,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             print(value)
             return bestAction
 
-        def minValue(state, agentIdx, depth, alpha, beta)
+        def minValue(state, agentIdx, depth, alpha, beta):
             if agentIdx == state.getNumAgents():
                 return maxValue(state, 0, depth + 1)
             value = None
@@ -334,7 +334,61 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         # util.raiseNotDefined()
+        def expectimax_search(state):
+            bestValue, bestAction = None, None
+            print(state.getLegalActions(0))
+            value = []
+            for action in state.getLegalActions(0):
+                #value = max(value,minValue(state.generateSuccessor(0, action), 1, 1))
+                succ  = expValue(state.generateSuccessor(0, action), 1, 1)
+                value.append(succ)
+                if bestValue is None:
+                    bestValue = succ
+                    bestAction = action
+                else:
+                    if succ > bestValue:
+                        bestValue = succ
+                        bestAction = action
+            print(value)
+            return bestAction
 
+        def expValue(state, agentIdx, depth):
+            if agentIdx == state.getNumAgents():
+                return maxValue(state, 0, depth + 1)
+            value = 0
+            num_actions = 0
+            for action in state.getLegalActions(agentIdx):
+                value = value + expValue(state.generateSuccessor(agentIdx, action), agentIdx + 1, depth)
+                num_actions = num_actions + 1
+
+            if num_actions != 0:
+                value = value / num_actions
+
+            if value is not None:
+                return value
+            else:
+                return self.evaluationFunction(state)
+
+
+        def maxValue(state, agentIdx, depth):
+            if depth > self.depth:
+                return self.evaluationFunction(state)
+            value = None
+            for action in state.getLegalActions(agentIdx):
+                succ = expValue(state.generateSuccessor(agentIdx, action), agentIdx + 1, depth)
+                if value is None:
+                    value = succ
+                else:
+                    value = max(value, succ)
+
+            if value is not None:
+                return value
+            else:
+                return self.evaluationFunction(state)
+
+        action = expectimax_search(gameState)
+
+        return action
 
 
 # def betterEvaluationFunction(currentGameState):

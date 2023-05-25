@@ -10,7 +10,7 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
-
+import numpy as np
 
 from util import manhattanDistance
 from game import Directions
@@ -152,11 +152,12 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a winning state
 
         gameState.isLose():
+        #TODO: this-part
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        #util.raiseNotDefined()
-        def alphabeta(state):
+        # util.raiseNotDefined()
+        def minimax_search(state):
             bestValue, bestAction = None, None
             print(state.getLegalActions(0))
             value = []
@@ -201,13 +202,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
                     value = succ
                 else:
                     value = max(value, succ)
-                
+
             if value is not None:
                 return value
             else:
                 return self.evaluationFunction(state)
 
-        action = alphabeta(gameState)
+        action = minimax_search(gameState)
 
         return action
 
@@ -228,7 +229,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         #             return self.evaluationFunction(state)
         #         # get all the minimax values for the next layer with each node being a possible state after a move
         #         next = (minimax_search(state.generateSuccessor(agentIndex, m), agentIndex + 1, depth) for m in moves)
-
+        #
         #         # if max layer, return max of layer below
         #         if agentIndex == 0:
         #             return max(next)
@@ -237,8 +238,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         #             return min(next)
         # # select the action with the greatest minimax value
         # result = max(gameState.getLegalActions(0), key=lambda x: minimax_search(gameState.generateSuccessor(0, x), 1, 1))
-
-        # return result        
+        #
+        # return result
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -250,7 +251,74 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        def alphabeta_search(state, alpha, beta):
+            bestValue, bestAction = None, None
+            print(state.getLegalActions(0))
+            value = []
+            for action in state.getLegalActions(0):
+                #value = max(value,minValue(state.generateSuccessor(0, action), 1, 1))
+                succ  = minValue(state.generateSuccessor(0, action), 1, 1, alpha, beta)
+                value.append(succ)
+                if bestValue is None:
+                    bestValue = succ
+                    bestAction = action
+                else:
+                    if succ > bestValue:
+                        bestValue = succ
+                        bestAction = action
+            print(value)
+            return bestAction
+
+        def minValue(state, agentIdx, depth, alpha, beta)
+            if agentIdx == state.getNumAgents():
+                return maxValue(state, 0, depth + 1)
+            value = None
+            for action in state.getLegalActions(agentIdx):
+                succ = minValue(state.generateSuccessor(agentIdx, action), agentIdx + 1, depth, alpha, beta)
+
+                if value is None:
+                    value = succ
+                else:
+                    value = min(value, succ)
+
+                # prune branches that cannot give utilities > alpha
+                if value <= alpha:
+                    return value
+                beta = min(beta, value)
+
+            if value is not None:
+                return value
+            else:
+                return self.evaluationFunction(state)
+
+
+        def maxValue(state, agentIdx, depth, alpha, beta):
+            if depth > self.depth:
+                return self.evaluationFunction(state)
+            value = None
+            for action in state.getLegalActions(agentIdx):
+                succ = minValue(state.generateSuccessor(agentIdx, action), agentIdx + 1, depth, alpha, beta)
+                if value is None:
+                    value = succ
+                else:
+                    value = max(value, succ)
+
+                # prune branches that cannot give utilities that smaller than beta
+                if value >= beta:
+                    return value
+                alpha = max(alpha, value)
+
+            if value is not None:
+                return value
+            else:
+                return self.evaluationFunction(state)
+
+        action = alphabeta_search(gameState, -np.inf, np.inf)
+
+        return action
+
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -265,46 +333,109 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+
+
+
+# def betterEvaluationFunction(currentGameState):
+#     """
+#     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+#     evaluation function (question 5).
+#
+#     DESCRIPTION: <write something here so we know what you did>
+#     """
+#     "*** YOUR CODE HERE ***"
+#     #util.raiseNotDefined()
+#     newPos = currentGameState.getPacmanPosition()
+#     newFood = currentGameState.getFood()
+#     newGhostStates = currentGameState.getGhostStates()
+#     newCapsules = currentGameState.getCapsules()
+#     newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+#
+#     closestGhost = min([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
+#     if newCapsules:
+#         closestCapsule = min([manhattanDistance(newPos, caps) for caps in newCapsules])
+#     else:
+#         closestCapsule = 0
+#
+#     if closestCapsule:
+#         closest_capsule = -3 / closestCapsule
+#     else:
+#         closest_capsule = 100
+#
+#     if closestGhost:
+#         ghost_distance = -2 / closestGhost
+#     else:
+#         ghost_distance = -500
+#
+#     foodList = newFood.asList()
+#     if foodList:
+#         closestFood = min([manhattanDistance(newPos, food) for food in foodList])
+#     else:
+#         closestFood = 0
+#
+#     return -2 * closestFood + ghost_distance - 10 * len(foodList) + closest_capsule
+#
 
 def betterEvaluationFunction(currentGameState):
     """
-    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-    evaluation function (question 5).
+      Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+      evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    #util.raiseNotDefined()
     newPos = currentGameState.getPacmanPosition()
     newFood = currentGameState.getFood()
     newGhostStates = currentGameState.getGhostStates()
-    newCapsules = currentGameState.getCapsules()
-    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+    # newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-    closestGhost = min([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
-    if newCapsules:
-        closestCapsule = min([manhattanDistance(newPos, caps) for caps in newCapsules])
-    else:
-        closestCapsule = 0
+    # Get the current score of the successor state
+    score = currentGameState.getScore()
 
-    if closestCapsule:
-        closest_capsule = -3 / closestCapsule
-    else:
-        closest_capsule = 100
+    ghostValue = 10.0
+    foodValue = 10.0
+    scaredGhostValue = 50.0  # bigger value for the scared ghost because we want to prefer it as a move
 
-    if closestGhost:
-        ghost_distance = -2 / closestGhost
-    else:
-        ghost_distance = -500
+    # For every ghost
+    for x in newGhostStates:
+        # Find the distance from pacman
+        dis = manhattanDistance(newPos, x.getPosition())
+        if dis > 0:
+            """
+            If the ghost is edible, and the ghost is near, the distance
+            is small.In order to get a bigger score we divide the distance to a big number
+            to get a higher score
+            """
+            if x.scaredTimer > 0:
+                score += scaredGhostValue / dis
+            else:
+                score -= ghostValue / dis
+            """
+            If the ghost is not edible, and the ghost is far, the distance
+            is big. We want to avoid such situation so we subtract the distance to a big number
+            to lower the score and avoid this state.
+            """
 
+    # Find the distance of every food and insert it in a list using manhattan
     foodList = newFood.asList()
-    if foodList:
-        closestFood = min([manhattanDistance(newPos, food) for food in foodList])
-    else:
-        closestFood = 0
+    foodDistances = []
+    """
+    If the food is very close to the pacman then the distance is small and 
+    we want such a situation to proceed. So we divide the distance to a big number
+    to get a higher score 
+    """
+    for x in foodList:
+        foodDistances.append(manhattanDistance(newPos, x))
 
-    return -2 * closestFood + ghost_distance - 10 * len(foodList) + closest_capsule
+    # If there is at least one food
+    if len(foodDistances) is not 0:
+        score += foodValue / min(foodDistances)
+
+    # Return the final Score
+    return score
+
+    util.raiseNotDefined()
 
 # Abbreviation
 better = betterEvaluationFunction

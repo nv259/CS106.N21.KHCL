@@ -10,13 +10,14 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
+import random
+import util
+
 import numpy as np
 
-from util import manhattanDistance
-from game import Directions
-import random, util
-
 from game import Agent
+from util import manhattanDistance
+
 
 class ReflexAgent(Agent):
     """
@@ -159,7 +160,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # util.raiseNotDefined()
         def minimax_search(state):
             bestValue, bestAction = None, None
-            print(state.getLegalActions(0))
+            # print(state.getLegalActions(0))
             value = []
             for action in state.getLegalActions(0):
                 #value = max(value,minValue(state.generateSuccessor(0, action), 1, 1))
@@ -172,7 +173,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
                     if succ > bestValue:
                         bestValue = succ
                         bestAction = action
-            print(value)
+            # print(value)
             return bestAction
 
         def minValue(state, agentIdx, depth):
@@ -254,7 +255,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # util.raiseNotDefined()
         def alphabeta_search(state, alpha, beta):
             bestValue, bestAction = None, None
-            print(state.getLegalActions(0))
+            # print(state.getLegalActions(0))
             value = []
             for action in state.getLegalActions(0):
                 #value = max(value,minValue(state.generateSuccessor(0, action), 1, 1))
@@ -267,12 +268,12 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     if succ > bestValue:
                         bestValue = succ
                         bestAction = action
-            print(value)
+            # print(value)
             return bestAction
 
         def minValue(state, agentIdx, depth, alpha, beta):
             if agentIdx == state.getNumAgents():
-                return maxValue(state, 0, depth + 1)
+                return maxValue(state, 0, depth + 1, alpha, beta)
             value = None
             for action in state.getLegalActions(agentIdx):
                 succ = minValue(state.generateSuccessor(agentIdx, action), agentIdx + 1, depth, alpha, beta)
@@ -336,7 +337,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         # util.raiseNotDefined()
         def expectimax_search(state):
             bestValue, bestAction = None, None
-            print(state.getLegalActions(0))
+            # print(state.getLegalActions(0))
             value = []
             for action in state.getLegalActions(0):
                 #value = max(value,minValue(state.generateSuccessor(0, action), 1, 1))
@@ -349,7 +350,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                     if succ > bestValue:
                         bestValue = succ
                         bestAction = action
-            print(value)
+            # print(value)
             return bestAction
 
         def expValue(state, agentIdx, depth):
@@ -391,47 +392,47 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return action
 
 
-# def betterEvaluationFunction(currentGameState):
-#     """
-#     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-#     evaluation function (question 5).
-#
-#     DESCRIPTION: <write something here so we know what you did>
-#     """
-#     "*** YOUR CODE HERE ***"
-#     #util.raiseNotDefined()
-#     newPos = currentGameState.getPacmanPosition()
-#     newFood = currentGameState.getFood()
-#     newGhostStates = currentGameState.getGhostStates()
-#     newCapsules = currentGameState.getCapsules()
-#     newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-#
-#     closestGhost = min([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
-#     if newCapsules:
-#         closestCapsule = min([manhattanDistance(newPos, caps) for caps in newCapsules])
-#     else:
-#         closestCapsule = 0
-#
-#     if closestCapsule:
-#         closest_capsule = -3 / closestCapsule
-#     else:
-#         closest_capsule = 100
-#
-#     if closestGhost:
-#         ghost_distance = -2 / closestGhost
-#     else:
-#         ghost_distance = -500
-#
-#     foodList = newFood.asList()
-#     if foodList:
-#         closestFood = min([manhattanDistance(newPos, food) for food in foodList])
-#     else:
-#         closestFood = 0
-#
-#     return -2 * closestFood + ghost_distance - 10 * len(foodList) + closest_capsule
-#
-
 def betterEvaluationFunction(currentGameState):
+    """
+    Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+    evaluation function (question 5).
+
+    DESCRIPTION: <write something here so we know what you did>
+    """
+    "*** YOUR CODE HERE ***"
+    #util.raiseNotDefined()
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    newCapsules = currentGameState.getCapsules()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+    closestGhost = min([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
+    if newCapsules:
+        closestCapsule = min([manhattanDistance(newPos, caps) for caps in newCapsules])
+    else:
+        closestCapsule = 0
+
+    if closestCapsule:
+        closest_capsule = -3 / closestCapsule
+    else:
+        closest_capsule = 100
+
+    if closestGhost:
+        ghost_distance = -2 / closestGhost
+    else:
+        ghost_distance = -500
+
+    foodList = newFood.asList()
+    if foodList:
+        closestFood = min([manhattanDistance(newPos, food) for food in foodList])
+    else:
+        closestFood = 0
+
+    return -2 * closestFood + ghost_distance - 10 * len(foodList) + closest_capsule
+
+
+def myEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
@@ -483,13 +484,11 @@ def betterEvaluationFunction(currentGameState):
         foodDistances.append(manhattanDistance(newPos, x))
 
     # If there is at least one food
-    if len(foodDistances) is not 0:
+    if len(foodDistances) != 0:
         score += foodValue / min(foodDistances)
 
     # Return the final Score
     return score
-
-    util.raiseNotDefined()
 
 # Abbreviation
 better = betterEvaluationFunction

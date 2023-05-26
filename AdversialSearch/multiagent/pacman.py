@@ -304,12 +304,16 @@ class ClassicGameRules:
 
     def win(self, state, game):
         if not self.quiet:
-            print("Pacman emerges victorious! Score: %d" % state.data.score)
+            # TODO quiet
+            # print("Pacman emerges victorious! Score: %d" % state.data.score)
+            pass
         game.gameOver = True
 
     def lose(self, state, game):
         if not self.quiet:
-            print("Pacman died! Score: %d" % state.data.score)
+            # TODO quiet
+            # print("Pacman died! Score: %d" % state.data.score)
+            pass
         game.gameOver = True
 
     def getProgress(self, game):
@@ -680,6 +684,7 @@ def runGames(layout, pacman, ghosts, display, numGames, record, numTraining=0, c
     games = []
 
     for i in range(numGames):
+        # TODO beQuiet = i < numTraining
         beQuiet = i < numTraining
         if beQuiet:
                 # Suppress output and graphics

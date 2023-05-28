@@ -558,6 +558,8 @@ def readCommand(argv):
                       help='Turns on exception handling and timeouts during games', default=False)
     parser.add_option('--timeout', dest='timeout', type='int',
                       help=default('Maximum length of time an agent can spend computing in a single game'), default=30)
+    parser.add_option('--isTraining', action='store_true', dest='isTraining',
+                      help='use my own trainer', default=False)
 
     options, otherjunk = parser.parse_args(argv)
     if len(otherjunk) != 0:
@@ -610,6 +612,7 @@ def readCommand(argv):
     args['record'] = options.record
     args['catchExceptions'] = options.catchExceptions
     args['timeout'] = options.timeout
+    args['isTraining'] = options.isTraining
 
     # Special case: recorded games don't use the runGames method or args structure
     if options.gameToReplay != None:
@@ -676,10 +679,11 @@ def replayGame(layout, actions, display):
     display.finish()
 
 
-def runGames(layout, pacman, ghosts, display, numGames, record, numTraining=0, catchExceptions=False, timeout=30):
+def runGames(layout, pacman, ghosts, display, numGames, record, numTraining=0, catchExceptions=False, timeout=30, isTraining=False):
     import __main__
     __main__.__dict__['_display'] = display
 
+    # t0 = timer.time()
     rules = ClassicGameRules(timeout)
     games = []
 
@@ -696,7 +700,8 @@ def runGames(layout, pacman, ghosts, display, numGames, record, numTraining=0, c
             rules.quiet = False
         game = rules.newGame(layout, pacman, ghosts,
                              gameDisplay, beQuiet, catchExceptions)
-        game.run()
+        check = game.run()
+
         if not beQuiet:
             games.append(game)
 
@@ -711,7 +716,13 @@ def runGames(layout, pacman, ghosts, display, numGames, record, numTraining=0, c
             f.close()
 
     if (numGames-numTraining) > 0:
-        scores = [game.state.getScore() for game in games]
+        scores = []
+        for game in games:
+            if not game.gameOver:
+                scores.append(game.state.getScore() - 500.0)
+            else:
+                scores.append(game.state.getScore())
+        # scores = [game.state.getScore() for game in games]
         wins = [game.state.isWin() for game in games]
         winRate = wins.count(True) / float(len(wins))
         print('Average Score:', sum(scores) / float(len(scores)))
@@ -721,7 +732,16 @@ def runGames(layout, pacman, ghosts, display, numGames, record, numTraining=0, c
         print('Record:       ', ', '.join(
             [['Loss', 'Win'][int(w)] for w in wins]))
 
+    if isTraining:
+        return sum(scores) / float(len(scores))
+
     return games
+
+
+# My trainer.py
+def my_trainer(my_args):
+    args = readCommand(my_args)
+    return runGames(**args)
 
 
 if __name__ == '__main__':

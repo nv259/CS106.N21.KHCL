@@ -10,6 +10,7 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
+import json
 import random
 import util
 
@@ -433,61 +434,74 @@ def betterEvaluationFunction(currentGameState):
 
 
 def myEvaluationFunction(currentGameState):
-    """
-      Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-      evaluation function (question 5).
+    # """
+    #   Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
+    #   evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
-    """
-    "*** YOUR CODE HERE ***"
+    #   DESCRIPTION: <write something here so we know what you did>
+    # """
+    # "*** YOUR CODE HERE ***"
     newPos = currentGameState.getPacmanPosition()
     newFood = currentGameState.getFood()
     newGhostStates = currentGameState.getGhostStates()
-    # newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+    newCapsules = currentGameState.getCapsules()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-    # Get the current score of the successor state
-    score = currentGameState.getScore()
+    # # open file to get weight values
+    # # with open('./weights.json', 'r') as f:
+    #     # W = json.load(f)
 
-    ghostValue = 10.0
-    foodValue = 10.0
-    scaredGhostValue = 50.0  # bigger value for the scared ghost because we want to prefer it as a move
+    # get current score
+    score =  currentGameState.getScore()
 
-    # For every ghost
+    # # calculate score feature for ghosts
+    ghost_score = 0
     for x in newGhostStates:
         # Find the distance from pacman
-        dis = manhattanDistance(newPos, x.getPosition())
-        if dis > 0:
-            """
-            If the ghost is edible, and the ghost is near, the distance
-            is small.In order to get a bigger score we divide the distance to a big number
-            to get a higher score
-            """
+        dis_to_ghost_x = manhattanDistance(newPos, x.getPosition())
+        if dis_to_ghost_x > 0:
+            # check whether selected ghost is scared or not?
             if x.scaredTimer > 0:
-                score += scaredGhostValue / dis
+                ghost_score = ghost_score + 50.0 / dis_to_ghost_x  # go to eat ghost
             else:
-                score -= ghostValue / dis
-            """
-            If the ghost is not edible, and the ghost is far, the distance
-            is big. We want to avoid such situation so we subtract the distance to a big number
-            to lower the score and avoid this state.
-            """
+                ghost_score = ghost_score - 10.0 / dis_to_ghost_x  # run away
 
-    # Find the distance of every food and insert it in a list using manhattan
+    # # Encourage pacman to prioritize states where more flexible (more directions to go)
+    junctions = len(currentGameState.getLegalActions(0))
+    junctions_score = junctions
+    
     foodList = newFood.asList()
-    foodDistances = []
-    """
-    If the food is very close to the pacman then the distance is small and 
-    we want such a situation to proceed. So we divide the distance to a big number
-    to get a higher score 
-    """
+    min_dist_to_food = None
+
     for x in foodList:
-        foodDistances.append(manhattanDistance(newPos, x))
+        dis_to_food_x = manhattanDistance(newPos, x)
 
-    # If there is at least one food
-    if len(foodDistances) != 0:
-        score += foodValue / min(foodDistances)
+        if min_dist_to_food is None:
+            min_dist_to_food = dis_to_food_x
+        else:
+            min_dist_to_food = min(min_dist_to_food, dis_to_food_x)
 
-    # Return the final Score
+    if min_dist_to_food is not None:
+        min_dist_to_food = 10.0 / min_dist_to_food
+    else:
+        min_dist_to_food = 0
+        
+
+    # Find the min distance to every capsule
+    # Encourage pacman to eat all capsule as soon as possible
+    if newCapsules:
+        closestCapsule = min([manhattanDistance(newPos, caps) for caps in newCapsules])
+    else:
+        closestCapsule = 0
+
+    if closestCapsule:
+        closest_capsule = -2 / closestCapsule
+    else:
+        closest_capsule = 100
+
+    score = score + ghost_score + min_dist_to_food - 2 * len(foodList) + junctions_score + 0.5 * closest_capsule# + closest_capsule + junctions_score
+
+    # # Return the final Score
     return score
 
 # Abbreviation

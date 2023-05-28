@@ -1,0 +1,9 @@
+{
+    "w_score": 1,
+    "w_junctions": 10,
+    "w_capsule": -50,
+    "w_remaining_food": -50,
+    "w_ghost_edible": -100,
+    "w_ghost": 60,
+    "w_food": -40
+}

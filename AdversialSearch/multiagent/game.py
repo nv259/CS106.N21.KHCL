@@ -605,6 +605,7 @@ class Game:
         """
         Main control loop for game play.
         """
+        t0 = time.time()
         self.display.initialize(self.state.data)
         self.numMoves = 0
 
@@ -651,6 +652,12 @@ class Game:
         numAgents = len(self.agents)
 
         while not self.gameOver:
+            t1 = time.time()
+
+            # TODO my stop
+            if t1 - t0 > 300:
+                return False
+
             # Fetch the next agent
             agent = self.agents[agentIndex]
             move_time = 0
@@ -776,3 +783,4 @@ class Game:
                     self.unmute()
                     return
         self.display.finish()
+        return True

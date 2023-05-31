@@ -452,7 +452,7 @@ def myEvaluationFunction(currentGameState):
     #     # W = json.load(f)
 
     # get current score
-    score =  currentGameState.getScore()
+    current_score =  currentGameState.getScore()
 
     # # calculate score feature for ghosts
     ghost_score = 0
@@ -471,20 +471,20 @@ def myEvaluationFunction(currentGameState):
     junctions_score = junctions
     
     foodList = newFood.asList()
-    min_dist_to_food = None
+    closest_food = None
 
     for x in foodList:
         dis_to_food_x = manhattanDistance(newPos, x)
 
-        if min_dist_to_food is None:
-            min_dist_to_food = dis_to_food_x
+        if closest_food is None:
+            closest_food = dis_to_food_x
         else:
-            min_dist_to_food = min(min_dist_to_food, dis_to_food_x)
+            closest_food = min(closest_food, dis_to_food_x)
 
-    if min_dist_to_food is not None:
-        min_dist_to_food = 10.0 / min_dist_to_food
+    if closest_food is not None:
+        closest_food = 10.0 / closest_food
     else:
-        min_dist_to_food = 0
+        closest_food = 0
         
 
     # Find the min distance to every capsule
@@ -499,7 +499,7 @@ def myEvaluationFunction(currentGameState):
     else:
         closest_capsule = 100
 
-    score = score + ghost_score + min_dist_to_food - 2 * len(foodList) + junctions_score + 0.5 * closest_capsule# + closest_capsule + junctions_score
+    score = current_score + ghost_score + closest_food - 2 * len(foodList) + junctions_score + 0.5 * closest_capsule# + closest_capsule + junctions_score
 
     # # Return the final Score
     return score
